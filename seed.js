@@ -27,8 +27,8 @@ const seedData = async () => {
 
     // ─── Users ─────────────────────────────
     console.log('👤 Creating users...');
-    const adminPwd = process.env.SEED_ADMIN_PASSWORD || 'changeme';
-    const editorPwd = process.env.SEED_EDITOR_PASSWORD || 'changeme';
+    const adminPwd = process.env.SEED_ADMIN_PASSWORD;
+    const editorPwd = process.env.SEED_EDITOR_PASSWORD;
     const admin = await User.create({ username: 'admin', email: 'admin@portfolio.com', password: adminPwd, role: 'admin' });
     const editor = await User.create({ username: 'editor', email: 'editor@portfolio.com', password: editorPwd, role: 'editor' });
 
