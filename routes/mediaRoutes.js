@@ -37,6 +37,29 @@ router.post('/upload', protect, upload.single('image'), uploadMedia);
 
 /**
  * @swagger
+ * /api/media/upload-cv:
+ *   post:
+ *     summary: Upload a CV document
+ *     tags: [Media]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: File uploaded successfully
+ */
+router.post('/upload-cv', protect, upload.single('file'), uploadMedia);
+/**
+ * @swagger
  * /api/media:
  *   get:
  *     summary: Get all media
