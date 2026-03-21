@@ -3,6 +3,7 @@ const ApiError = require('../utils/ApiError');
 const { apiResponse, paginatedResponse } = require('../utils/apiResponse');
 const fs = require('fs');
 const path = require('path');
+const cloudinary = require('cloudinary').v2;
 
 /**
  * @desc    Upload media
@@ -16,11 +17,11 @@ const uploadMedia = async (req, res, next) => {
     }
 
     const media = await Media.create({
-      filename: req.file.filename,
+      filename: req.file.filename || req.file.originalname,
       originalname: req.file.originalname,
       mimetype: req.file.mimetype,
-      size: req.file.size,
-      path: req.file.path.replace(/\\/g, '/'),
+      size: req.file.size || 0,
+      path: req.file.path,
       uploadedBy: req.user.id,
     });
 
@@ -90,11 +91,24 @@ const deleteMedia = async (req, res, next) => {
       return next(new ApiError('Media not found', 404));
     }
 
-    // Delete file from filesystem
-    const filePath = path.join(__dirname, '..', media.path);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    // Delete file from Cloudinary (or local filesystem for older files without cloud_name)
+    if (media.filename) {
+      try {
+        // Deleting from Cloudinary
+        // Cloudinary requires public_id for destroy operation, which is typically saved in media.filename by multer-cloud-storage
+        await cloudinary.uploader.destroy(media.filename);
+      } catch (err) {
+        console.error('Cloudinary deletion failed:', err);
+      }
     }
+    
+    // Also try local fs.unlinkSync just in case it was a local file (legacy)
+    try {
+      const filePath = path.join(__dirname, '..', media.path);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    } catch(err) {}
 
     await Media.findByIdAndDelete(req.params.id);
 
